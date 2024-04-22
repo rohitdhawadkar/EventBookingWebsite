@@ -49,3 +49,4 @@ router.post("/login", Validate(LoginSchema), async (req, res) => {
   }
 });
 
+module.exports = router;
