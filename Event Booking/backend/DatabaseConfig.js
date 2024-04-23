@@ -1,12 +1,11 @@
 const { Pool } = require("pg");
 
-const router = express.router();
 const pool = new Pool({
   user: "postgres",
-  password: "rohit2002",
   host: "localhost",
-  database: "LoginInfo",
-  port: 5432,
+  database: "EventBookingDB",
+  password: "rohit2002",
+  port: 5433,
 });
 
-module.exports = router;
+module.exports = pool;
