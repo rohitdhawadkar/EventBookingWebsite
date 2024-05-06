@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const { z } = require("zod");
 const { Validate } = require("./middleware");
-const pool = require("./DatabaseConfig"); // Assuming you have a file named 'db.js' where you define and export the database connection pool
+const pool = require("./DatabaseConfig");
 
 const router = express.Router();
 
@@ -16,7 +16,6 @@ router.post("/registration", Validate(registerSchema), async (req, res) => {
   const { username, password, role } = req.body;
 
   try {
-    // Check if the username already exists
     const usernameMatch = await pool.query(
       "SELECT * FROM users WHERE username = $1",
       [username],
@@ -26,10 +25,8 @@ router.post("/registration", Validate(registerSchema), async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash the password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Insert the user into the database
     await pool.query(
       "INSERT INTO users (username, password, role) VALUES ($1, $2, $3)",
       [username, passwordHash, role],

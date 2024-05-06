@@ -32,7 +32,10 @@ router.post("/login", Validate(LoginSchema), async (req, res) => {
 
     const role = user.role;
 
-    const token = jwt.sign({ userId: user.id, role }, "rohit2002");
+    const token = jwt.sign(
+      { userId: user.id, username: user.username, role },
+      "mumbai",
+    );
 
     res.json({ token });
   } catch (error) {

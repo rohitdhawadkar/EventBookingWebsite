@@ -1,5 +1,7 @@
 const express = require("express");
 const { z } = require("zod");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 const router = express.Router();
 
@@ -20,7 +22,7 @@ const Validate = (schema) => {
 };
 
 const checkRole = (requiredRole) => {
-  return (res, req, next) => {
+  return (req, res, next) => {
     const { role } = req.user;
     if (role != requiredRole) {
       return res.status(403).json({ message: "Access Denied" });
@@ -30,18 +32,32 @@ const checkRole = (requiredRole) => {
 };
 
 const VerifyToken = (req, res, next) => {
-  const token = req.headers.authorization;==
+  const token = req.headers.authorization;
 
   if (!token) {
-    res.status(403).json({ message: "No token provided" });
+    console.error("No token provided.");
+    return res.status(401).send("Access denied. No token provided.");
   }
+
   try {
-    const decoded = jwt.verify(token, "rohit2002");
+    const tokenValue = token.split(" ")[1];
+    // console.log("Token value:", tokenValue); // Debugging: Log token value
+    const decoded = jwt.verify(tokenValue, "mumbai"); // Verify token with the correct secret key
+    // console.log("Decoded token:", decoded); // Debugging: Log decoded token
+    if (!decoded || !decoded.role) {
+      console.error("Invalid token payload:", decoded);
+      return res.status(401).send("Invalid token payload.");
+    }
     req.user = decoded;
     next();
-  } catch {
-    return res.status(401).json("Inavlid Token");
+  } catch (error) {
+    console.error("Token verification error:", error);
+    res.status(400).send("Invalid token.");
   }
+};
+
+module.exports = {
+  VerifyToken,
 };
 
 module.exports = {

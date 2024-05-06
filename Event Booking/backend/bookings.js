@@ -31,12 +31,12 @@ router.post("/bookings", VerifyToken, checkRole("user"), async (req, res) => {
     }
 
     await pool.query(
-      "INSERT INTO bookings (username, EventTitle, EventId, quantity) VALUES ($1, $2, $3, $4)",
+      "INSERT INTO bookings (username, eventtitle, eventid, quantity) VALUES ($1, $2, $3, $4)",
       [username, EventTitle, EventId, quantity],
     );
 
     await pool.query(
-      "UPDATE events SET SeatsAvailable = SeatsAvailable - $1 WHERE id = $2",
+      "UPDATE events SET seatsavailable = seatsavailable - $1 WHERE id = $2",
       [quantity, EventId],
     );
 
@@ -51,44 +51,53 @@ router.get(
   VerifyToken,
   checkRole("user"),
   async (req, res) => {
-    const { id } = req.params.id;
+    const { id } = req.params; // Use req.params directly to access the id parameter
 
-    try{
-      const result = await pool.query("SELECT * FROM bookings WHERE username = $1 ",[id]);
-      if(result.rows.length===0){
-        res.status(400).json({message:"No Bookings"});
+    try {
+      const result = await pool.query(
+        "SELECT * FROM bookings WHERE userid = $1 ",
+        [id],
+      );
+      if (result.rows.length === 0) {
+        res.status(400).json({ message: "No Bookings" });
       }
       res.json(result.rows);
-
-    }catch(error){
-      res.status.(400).json({message:"Error Occured",errors:error.errors});
+    } catch (error) {
+      res.status(400).json({ message: "Error Occurred", errors: error.errors });
     }
-
-
-  }
+  },
 );
 
-router.delete("/bookings/:id",VerifyToken,checkRole("user"),async (req,res)=>{
-  const {id} = req.params.id;
-  try{
+router.delete(
+  "/bookings/:id",
+  VerifyToken,
+  checkRole("user"),
+  async (req, res) => {
+    const { id } = req.params.id;
+    try {
+      const result = await pool.query(
+        "SELECT * FROM bookings where BookingId = $1 ",
+        [id],
+      );
+      if (result.rows.length === 0) {
+        res.status(400).json({ message: "Booking not found" });
+      }
+      const eventId = result.rows[0].Id;
+      const quantity = result.rows[0].quantity;
 
-       const result = await pool.query("SELECT * FROM bookings where BookingId = $1 ",[id]);
-        if(result.rows.length===0){
-        res.status(400).json({message:"Booking not found"});
-        }
-     const eventId = result.rows[0].Id;
-     const quantity = result.rows[0].quantity;
-
-     const update = await pool.query("UPDATE events SET tickets_available = tickets_available + $1 WHERE id = $2",[quantity,eventId]);
-      const del = await pool.query("DELETE FROM bookings WHERE id = $1",[id]);
-      res.json({message:"Booking Deleted Successfully"});
-  }
-
-     catch(error){
-       res.status(400).json({message:"Error while deleting booking",errors:error.errors});
-     }
-
+      const update = await pool.query(
+        "UPDATE events SET seatsavailable = seatsavailable + $1 WHERE id = $2",
+        [quantity, eventId],
+      );
+      const del = await pool.query("DELETE FROM bookings WHERE id = $1", [id]);
+      res.json({ message: "Booking Deleted Successfully" });
+    } catch (error) {
+      res.status(400).json({
+        message: "Error while deleting booking",
+        errors: error.errors,
+      });
+    }
   },
-});
+);
 
 module.exports = router;
