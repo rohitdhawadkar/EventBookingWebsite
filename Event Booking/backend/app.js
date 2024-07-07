@@ -3,7 +3,7 @@ const cors = require("cors");
 
 const app = express();
 const registerRoute = require("./RegistrationRoute");
-const loginRoute = require("./LoginRoute");
+const loginRoute = require("Event Booking/backend/LoginRoute/LoginRoute.js");
 const bookingRoute = require("./bookings");
 const events = require("./events");
 app.use(cors());
